@@ -1,3 +1,7 @@
- char *m_selfArch;
- char *m_systemVersion;
- 
+static char *m_selfArch;
+static char *m_systemVersion;
+
+char *getSystemArch();
+char *getSystemVersion();
+
+char *searchApps(char *appName);
