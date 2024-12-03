@@ -1,7 +1,7 @@
 static char *m_selfArch;
 static char *m_systemVersion;
 
-char *getSystemArch();
-char *getSystemVersion();
+void *getSystemArch();
+void *getSystemVersion();
 
-char *searchApps(char *appName);
+char *searchApps(const char *categoryid, const char *orderway, int pageno, int pagesize, const char *searchkeyword);
