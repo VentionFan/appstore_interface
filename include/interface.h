@@ -1,7 +1,9 @@
+#include <glib-2.0/glib.h>
+
 static char *m_selfArch;
 static char *m_systemVersion;
 
-void *getSystemArch();
-void *getSystemVersion();
+void *get_system_arch();
+void *get_system_version();
 
-char *searchApps(const char *categoryid, const char *orderway, int pageno, int pagesize, const char *searchkeyword);
+char *search_apps(const char *categoryid, const char *orderway, int pageno, int pagesize, const char *searchkeyword, GList **result);

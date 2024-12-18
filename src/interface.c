@@ -8,7 +8,7 @@ static char *m_selfArch = NULL;
 static char *m_systemVersion = NULL;
 g_type_init();
 
-char *getOrderBy(char *orderway, gboolean app)
+char *get_order_by(char *orderway, gboolean app)
 {
     GString *res = g_string_new("");
     GList *selectOrder = NULL;
@@ -54,10 +54,12 @@ char *getOrderBy(char *orderway, gboolean app)
     g_string_truncate(res, res->len - 1);
     char *result_str = g_strdup(res->str);
     g_string_free(res, TRUE);
+    g_list_free(selectOrder);
+    selectOrder = NULL;
     return result_str;
 }
 
-void *getSystemArch()
+void *get_system_arch()
 {
     gchar *output = NULL;
     gchar *error_output = NULL;
@@ -101,19 +103,19 @@ void *getSystemArch()
     }
 }
 
-void *getSystemVersion()
+void *get_system_version()
 {
 }
 
-char *searchApps(const char *categoryid, const char *orderway, int pageno, int pagesize, const char *searchkeyword)
+char *search_apps(const char *categoryid, const char *orderway, int pageno, int pagesize, const char *searchkeyword, GList **result)
 {
     if (m_selfArch == NULL)
     {
-        getSystemArch();
+        get_system_arch();
     }
     if (m_systemVersion = NULL)
     {
-        getSystemVersion();
+        get_system_version();
     }
 
     int rc;
@@ -163,7 +165,7 @@ char *searchApps(const char *categoryid, const char *orderway, int pageno, int p
         g_string_replace(sql_tmp, "searchName", search->str, 1);
         g_string_free(search, TRUE);
     }
-    g_string_replace(sql_tmp, "orderway", getOrderBy(orderway, TRUE), 1);
+    g_string_replace(sql_tmp, "orderway", get_order_by(orderway, TRUE), 1);
     GString *sql_cmd = g_string_new(NULL);
     g_string_printf(sql_cmd, sql_tmp->str, (pageno - 1) * pagesize, pagesize);
     g_string_free(sql_tmp, TRUE);
@@ -180,9 +182,10 @@ char *searchApps(const char *categoryid, const char *orderway, int pageno, int p
     // 在这里进行数据库操作，如创建表、插入数据等
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
     {
-        const char *software = (const char *)sqlite3_column_text(stmt, 0);
-        const char *id = (const char *)sqlite3_column_text(stmt, 1);
-        printf("ID: %s, Software: %s\n", id, software);
+        char *software = strdup(sqlite3_column_text(stmt, 0));
+        // const char *id = (const char *)sqlite3_column_text(stmt, 1);
+        *result = g_list_append(*result, (gpointer)software);
+        // printf("ID: %s, Software: %s\n", id, software);
     }
     if (rc != SQLITE_DONE)
     {
@@ -197,6 +200,16 @@ char *searchApps(const char *categoryid, const char *orderway, int pageno, int p
 
 int main()
 {
-    searchApps(NULL, NULL, 1, 7, NULL);
+    GList *searchres = NULL;
+    search_apps(NULL, NULL, 1, 7, NULL, &searchres);
+    printf("list has %d\n", g_list_length(searchres));
+    GList *current = searchres;
+    while (current != NULL)
+    {
+        const char *str = (const char *)current->data;
+        g_print("search get %s\n", str);
+        current = g_list_next(current);
+    }
+    g_list_free_full(searchres, (GDestroyNotify)free);
     return 0;
 }
